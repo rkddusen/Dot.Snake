@@ -20,7 +20,7 @@ int menu();
 void level_menu();
 void start_menu();
 void move(int* x, int* y, int count, int score, int level_choice);
-int* star();
+int* star(int* x, int* y, int count);
 bool eat(int x, int y, int* star_rand);
 bool crash(int* x, int* y, int count);
 void game_over(int score);
@@ -243,14 +243,7 @@ void move(int* x, int* y, int count, int score, int level_choice)
     }
 
     int* star_rand;//star함수로 부터 별의 좌표를 받기 위한 배열
-    while (1) {
-        star_rand = star();
-        if (star_rand[0] == x[0] || star_rand[1] == y[0]) {
-            continue;
-        }
-        else
-            break;
-    }
+    star_rand = star(x,y,count);
     //gotoxy(0, 24);
     //cout << star_rand[0] << "," << star_rand[1];
     int key = 0;//키보드 입력 상하좌우 받기 위한 변수
@@ -259,9 +252,9 @@ void move(int* x, int* y, int count, int score, int level_choice)
     int save_y = 0;
     //int speed = 200;/
     int speed;//Sleep(speed)로 속도 조절
-
+    //bool st_ch=true;//별 생성 확인
     do {
-        if (count == MAX-1) {
+        if (count == MAX - 1) {
             game_over(score);
         }
         save_x = x[count - 1];
@@ -270,7 +263,7 @@ void move(int* x, int* y, int count, int score, int level_choice)
             key = keyControl();
         }
 
-        speed = 200 - (count * ((level_choice-3)/2));
+        speed = 200 - (count * ((level_choice - 4)));
         if (speed <= 0) {
             speed = 1;
         }
@@ -298,17 +291,11 @@ void move(int* x, int* y, int count, int score, int level_choice)
             y[0] = y[0] - 1;//y좌표는 -1(한 칸 올리기)
 
             if (eat(x[0], y[0], star_rand)) {//별 먹었을 때
+                //st_ch = false;
                 count++; score++;
                 x[count - 1] = save_x;
                 y[count - 1] = save_y;
-                while (1) {
-                    star_rand = star();
-                    if (star_rand[0] == x[0] || star_rand[1] == y[0]) {
-                        continue;
-                    }
-                    else
-                        break;
-                }//별 다시 랜덤
+                star_rand = star(x, y, count);
             }
             gotoxy(x[0], y[0]);
             cout << "◎";
@@ -335,14 +322,7 @@ void move(int* x, int* y, int count, int score, int level_choice)
                 count++; score++;
                 x[count - 1] = save_x;
                 y[count - 1] = save_y;
-                while (1) {
-                    star_rand = star();
-                    if (star_rand[0] == x[0] || star_rand[1] == y[0]) {
-                        continue;
-                    }
-                    else
-                        break;
-                }//별 다시 랜덤
+                star_rand = star(x, y, count);//별 다시 랜덤
             }
 
             gotoxy(x[0], y[0]);
@@ -370,14 +350,7 @@ void move(int* x, int* y, int count, int score, int level_choice)
                 count++; score++;
                 x[count - 1] = save_x;
                 y[count - 1] = save_y;
-                while (1) {
-                    star_rand = star();
-                    if (star_rand[0] == x[0] || star_rand[1] == y[0]) {
-                        continue;
-                    }
-                    else
-                        break;
-                }//별 다시 랜덤
+                star_rand = star(x, y, count);//별 다시 랜덤
             }
 
             gotoxy(x[0], y[0]);
@@ -405,14 +378,7 @@ void move(int* x, int* y, int count, int score, int level_choice)
                 count++; score++;
                 x[count - 1] = save_x;
                 y[count - 1] = save_y;
-                while (1) {
-                    star_rand = star();
-                    if (star_rand[0] == x[0] || star_rand[1] == y[0]) {
-                        continue;
-                    }
-                    else
-                        break;
-                }//별 다시 랜덤
+                star_rand = star(x, y, count);//별 다시 랜덤
             }
 
             gotoxy(x[0], y[0]);
@@ -594,10 +560,20 @@ int keyControl() {//key입력 받는 함수(방향키)
         return 0;
 }
 
-int* star() {
-    srand((unsigned int)time(NULL));
-    int x_rand = (rand() % (col - 2) + 1) * 2;//랜덤으로 생성될 별의 x좌표
-    int y_rand = rand() % (row - 2) + 1;//랜덤으로 생성될 별의 y좌표
+int* star(int* x, int* y, int count) {
+    int star_check = 1;
+    int x_rand, y_rand;
+    while (star_check) {
+        star_check = 0;
+        srand((unsigned int)time(NULL));
+        x_rand = (rand() % (col - 2) + 1) * 2;//랜덤으로 생성될 별의 x좌표
+        y_rand = rand() % (row - 2) + 1;//랜덤으로 생성될 별의 y좌표
+        for (int i = 0; i < count; i++) {
+            if (x_rand == x[i] && y_rand == y[i]) {
+                star_check++;
+            }
+        }
+    }
     static int rand[2];//별의 좌표를 리턴해주기 위해
     rand[0] = x_rand;
     rand[1] = y_rand;

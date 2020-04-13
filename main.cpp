@@ -3,9 +3,9 @@
 #include<conio.h>
 #include<cstdlib>
 #include<ctime>
-#define row 21//맵의 세로
-#define col 42//맵의 가로
-#define MAX 50//snake 최대 길이
+//#define row 21//맵의 세로
+//#define col 42//맵의 가로
+#define MAX 100//snake 최대 길이
 #define UP 1
 #define DOWN 2
 #define RIGHT 3
@@ -14,17 +14,41 @@
 #define STOP 6
 #define DASH 7
 using namespace std;
+
+enum Color
+{
+	BLUE = 1,
+	GREEN,
+	CYAN,
+	RED,
+	MAGENTA,
+	BROWN,
+	LIGHTGRAY,
+	DARKGRAY,
+	LIGHTBLUE,
+	LIGHTGREEN,
+	LIGHTCYAN,
+	LIGHTRED,
+	LIGHTMAGENTA,
+	YELLOW,
+	WHITE
+};
+
 void border();
 int keyControl();
 void main_scene();
 int menu();
 void level_menu();
 void start_menu();
-void move(int* x, int* y, int count, int score, int level_choice);
+int style_menu();
+void move(int* x, int* y, int count, int score, int level_choice, int color);
 int* star(int* x, int* y, int count);
 bool eat(int x, int y, int* star_rand);
 bool crash(int* x, int* y, int count);
 void game_over(int score);
+int col = 42;
+int row = 21;
+
 void CursorView(char show)//커서 숨기기
 {
 	HANDLE hConsole;
@@ -62,9 +86,9 @@ void border() {//테두리 그려주는 함수
 }
 
 int best_score = 0;
+
+
 int main() {
-	//system("title Dot.Snake");
-	//system(" mode  con lines=30   cols=100 ");
 	CursorView(0);
 	int x[MAX] = { 6, 0, };
 	int y[MAX] = { 10, 0, };
@@ -88,7 +112,8 @@ int main() {
 			border();
 			level_menu();//레벨 선택하기
 			level_choice = menu();
-			move(x, y, count, score, level_choice);
+			int color = style_menu();
+			move(x, y, count, score, level_choice, color);
 		}
 		else if (menu_choice == 9) {//게임 룰 설명
 			system("cls");
@@ -117,7 +142,6 @@ int main() {
 			setcolor(15, 0);
 			system("cls");
 			border();
-			//continue;
 		}
 		else if (menu_choice == 11) {//exit
 			system("cls");
@@ -154,10 +178,11 @@ void main_scene() {//메인화면 그리기
 	gotoxy(8, 8);
 	setcolor(15, 8);
 	cout << " ▦▦    ▦▦    ▦     ▦▦▦▦ ▦    ▦ ▦    ▦ ▦    ▦ ▦▦▦▦";
-	Sleep(500);
+	Sleep(400);
 	gotoxy(29, 8);
 	setcolor(15, 8);
 	cout << "⊙";
+	Sleep(400);
 	gotoxy(28, 12);
 	setcolor(15, 0);
 	cout << "<< Press [Enter] to Start >>";
@@ -234,10 +259,132 @@ int menu() {
 	} while (menu_key != ENTER);
 }
 
-void move(int* x, int* y, int count, int score, int level_choice)
+int style_menu() {
+	system("cls");
+	border();
+	gotoxy(4, 2);
+	cout << "Choose Color";
+
+	//목록
+	setcolor(BLUE, 0); gotoxy(16, 7); cout << "> BLUE";
+	setcolor(GREEN, 0); gotoxy(35, 7); cout << "  GREEN";
+	setcolor(CYAN, 0); gotoxy(54, 7); cout << "  CYAN";
+	setcolor(RED, 0); gotoxy(16, 9); cout << "  RED";
+	setcolor(MAGENTA, 0); gotoxy(35, 9); cout << "  MAGENTA";
+	setcolor(BROWN, 0); gotoxy(54, 9); cout << "  BROWN";
+	setcolor(LIGHTGRAY, 0); gotoxy(16, 11); cout << "  LIGHT_GRAY";
+	setcolor(DARKGRAY, 0); gotoxy(35, 11); cout << "  DARK_GRAY";
+	setcolor(LIGHTBLUE, 0); gotoxy(54, 11); cout << "  LIGHT_BLUE";
+	setcolor(LIGHTGREEN, 0); gotoxy(16, 13); cout << "  LIGHT_GREEN";
+	setcolor(LIGHTCYAN, 0); gotoxy(35, 13); cout << "  LIGHT_CYAN";
+	setcolor(LIGHTRED, 0); gotoxy(54, 13); cout << "  LIGHT_RED";
+	setcolor(LIGHTMAGENTA, 0); gotoxy(16, 15); cout << "  LIGHT_MAGENTA";
+	setcolor(YELLOW, 0); gotoxy(35, 15); cout << "  YELLOW";
+	setcolor(WHITE, 0); gotoxy(54, 15); cout << "  WHITE";
+
+	int style_key;
+	int style_x = 16;
+	int style_y = 7;
+	do {
+		style_key = keyControl();
+		switch (style_key) {
+		case UP:
+			if (style_y > 7) {
+				gotoxy(style_x, style_y);//그 자리
+				cout << " ";//먼저 지우고
+				style_y -= 2;
+				gotoxy(style_x, style_y);//두 칸 위에 올라가기
+				cout << ">";
+
+			}
+			else if (style_y == 7) {
+				gotoxy(style_x, style_y);
+				cout << " ";
+				gotoxy(style_x, 15);
+				cout << ">";
+				style_y = 15;
+			}
+			break;
+
+		case DOWN:
+			if (style_y < 15) {
+				gotoxy(style_x, style_y);//그 자리
+				cout << " ";//먼저 지우고
+				style_y += 2;
+				gotoxy(style_x, style_y);//두 칸 밑에 내려가기
+				cout << ">";
+			}
+			else if (style_y == 15) {
+				gotoxy(style_x, style_y);
+				cout << " ";
+				gotoxy(style_x, 7);
+				cout << ">";
+				style_y = 7;
+			}
+			break;
+
+		case RIGHT:
+			if (style_x < 54) {
+				gotoxy(style_x, style_y);//그 자리
+				cout << " ";//먼저 지우고
+				style_x += 19;
+				gotoxy(style_x, style_y);//두 칸 위에 올라가기
+				cout << ">";
+
+			}
+			else if (style_x == 54) {
+				gotoxy(style_x, style_y);
+				cout << " ";
+				gotoxy(16, style_y);
+				cout << ">";
+				style_x = 16;
+			}
+			break;
+
+		case LEFT:
+			if (style_x > 16) {
+				gotoxy(style_x, style_y);//그 자리
+				cout << " ";//먼저 지우고
+				style_x -= 19;
+				gotoxy(style_x, style_y);//두 칸 위에 올라가기
+				cout << ">";
+
+			}
+			else if (style_x == 16) {
+				gotoxy(style_x, style_y);
+				cout << " ";
+				gotoxy(54, style_y);
+				cout << ">";
+				style_x = 54;
+			}
+			break;
+		case ENTER:
+			if (style_x == 16 && style_y == 7) return BLUE;
+			else if (style_x == 35 && style_y == 7) return GREEN;
+			else if (style_x == 54 && style_y == 7) return CYAN;
+			else if (style_x == 16 && style_y == 9) return RED;
+			else if (style_x == 35 && style_y == 9) return MAGENTA;
+			else if (style_x == 54 && style_y == 9) return BROWN;
+			else if (style_x == 16 && style_y == 11) return LIGHTGRAY;
+			else if (style_x == 35 && style_y == 11) return DARKGRAY;
+			else if (style_x == 54 && style_y == 11) return LIGHTBLUE;
+			else if (style_x == 16 && style_y == 13) return LIGHTGREEN;
+			else if (style_x == 35 && style_y == 13) return LIGHTCYAN;
+			else if (style_x == 54 && style_y == 13) return LIGHTRED;
+			else if (style_x == 16 && style_y == 15) return LIGHTMAGENTA;
+			else if (style_x == 35 && style_y == 15) return YELLOW;
+			else return WHITE;
+		}
+	} while (style_key != ENTER);
+
+	return 0;
+}
+
+void move(int* x, int* y, int count, int score, int level_choice, int color)
 {
 	system("cls");
 	border();
+	setcolor(color, 0);
 	gotoxy(x[0], y[0]);
 	cout << "◎";
 	for (int i = 1; i < count; i++) {//초기 모습 그리기
@@ -247,18 +394,16 @@ void move(int* x, int* y, int count, int score, int level_choice)
 
 	int* star_rand;//star함수로 부터 별의 좌표를 받기 위한 배열
 	star_rand = star(x, y, count);
-	//gotoxy(0, 24);
-	//cout << star_rand[0] << "," << star_rand[1];
+	setcolor(color, 0);
+
 	int key = 0;//키보드 입력 상하좌우 받기 위한 변수
 	int key_comp = 0;//상 키와 하 키 이웃하지 않기, 좌 키와 우 키 이웃하지 않기 위한 변수
 	int save_x = 0;//별을 먹었을 때 추가해 주기 위해 저장함
 	int save_y = 0;
-	//int speed = 200;/
 	int speed;//Sleep(speed)로 속도 조절
 	int dash_check = 0;//dash 체크
-	//bool st_ch=true;//별 생성 확인
 	do {
-		if (count == MAX - 1) {
+		if (count == MAX - 1) {//이기는 조건(------------------------------------------->코드 수정해야함)
 			game_over(score);
 		}
 		save_x = x[count - 1];
@@ -267,7 +412,7 @@ void move(int* x, int* y, int count, int score, int level_choice)
 			key = keyControl();
 		}
 
-		if (dash_check >0)
+		if (dash_check > 0)
 			speed = 10;
 		else
 			speed = 200 - (count * ((level_choice - 4)));
@@ -276,9 +421,6 @@ void move(int* x, int* y, int count, int score, int level_choice)
 		if (speed <= 0) {
 			speed = 1;
 		}
-
-		//gotoxy(0, 23);
-		//cout << key << "," << key_comp;//확인용
 
 		if ((key_comp == UP && key == DOWN) || (key_comp == DOWN && key == UP) //상과 하, 좌와 우가 이웃되지 않게 하기 위해
 			|| (key_comp == RIGHT && key == LEFT) || (key_comp == LEFT && key == RIGHT)) {
@@ -312,11 +454,11 @@ void move(int* x, int* y, int count, int score, int level_choice)
 			y[0] = y[0] - 1;//y좌표는 -1(한 칸 올리기)
 
 			if (eat(x[0], y[0], star_rand)) {//별 먹었을 때
-				//st_ch = false;
-				count++; score++;
+				count++; score++; //bomb_count++;
 				x[count - 1] = save_x;
 				y[count - 1] = save_y;
 				star_rand = star(x, y, count);
+				setcolor(color, 0);
 			}
 			gotoxy(x[0], y[0]);
 			cout << "◎";
@@ -341,10 +483,11 @@ void move(int* x, int* y, int count, int score, int level_choice)
 			y[0] = y[0] + 1;//y좌표는 +1(한 칸 내리기)
 
 			if (eat(x[0], y[0], star_rand)) {//별 먹었을 때
-				count++; score++;
+				count++; score++; //bomb_count++;
 				x[count - 1] = save_x;
 				y[count - 1] = save_y;
 				star_rand = star(x, y, count);//별 다시 랜덤
+				setcolor(color, 0);
 			}
 
 			gotoxy(x[0], y[0]);
@@ -370,10 +513,11 @@ void move(int* x, int* y, int count, int score, int level_choice)
 			y[0] = y[0];//y좌표는 그대로
 
 			if (eat(x[0], y[0], star_rand)) {//별 먹었을 때
-				count++; score++;
+				count++; score++; //bomb_count++;
 				x[count - 1] = save_x;
 				y[count - 1] = save_y;
 				star_rand = star(x, y, count);//별 다시 랜덤
+				setcolor(color, 0);
 			}
 
 			gotoxy(x[0], y[0]);
@@ -399,10 +543,11 @@ void move(int* x, int* y, int count, int score, int level_choice)
 			y[0] = y[0];//y좌표는 그대로
 
 			if (eat(x[0], y[0], star_rand)) {//별 먹었을 때
-				count++; score++;
+				count++; score++; //bomb_count++;
 				x[count - 1] = save_x;
 				y[count - 1] = save_y;
 				star_rand = star(x, y, count);//별 다시 랜덤
+				setcolor(color, 0);
 			}
 
 			gotoxy(x[0], y[0]);
@@ -440,7 +585,7 @@ void move(int* x, int* y, int count, int score, int level_choice)
 			main();
 			break;
 		}
-		if(dash_check>0)
+		if (dash_check > 0)
 			dash_check--;
 
 		//별이 반짝이는 효과를 주기 위함
@@ -453,19 +598,22 @@ void move(int* x, int* y, int count, int score, int level_choice)
 			cout << "  ";
 		}
 		else {
+			setcolor(YELLOW, 0);
 			gotoxy(star_rand[0], star_rand[1]);
 			cout << "☆";
+			setcolor(color, 0);
 		}
-		
+
 		//맵 아래에 점수 띄우기
+		setcolor(WHITE, 0);
 		gotoxy(2, 22);
 		cout << "SCORE : " << score;
+		setcolor(color, 0);
 	} while (1);
 }
 
 int keyControl() {//key입력 받는 함수(방향키)
 	int temp = _getch();
-	//cout << temp;
 	if (temp == 72)
 		return UP;
 	else if (temp == 80)
@@ -501,6 +649,7 @@ int* star(int* x, int* y, int count) {
 	static int rand[2];//별의 좌표를 리턴해주기 위해
 	rand[0] = x_rand;
 	rand[1] = y_rand;
+	setcolor(YELLOW, 0);
 	gotoxy(rand[0], rand[1]);
 	cout << "☆";
 
@@ -509,8 +658,6 @@ int* star(int* x, int* y, int count) {
 
 bool eat(int x, int y, int* star_rand) {
 	if (x == star_rand[0] && y == star_rand[1]) {
-		//gotoxy(0, 25);
-		//cout << "별";
 		gotoxy(x, y);
 		return true;
 	}
@@ -535,6 +682,7 @@ bool crash(int* x, int* y, int count) {
 
 void game_over(int score) {
 	system("cls");
+	col = 42; row = 21;
 	border();
 	gotoxy(4, 2);
 	cout << "G "; Sleep(200);
@@ -546,11 +694,13 @@ void game_over(int score) {
 	cout << "V "; Sleep(200);
 	cout << "E "; Sleep(200);
 	cout << "R "; Sleep(300);
+	gotoxy(4, 4);
 	if (score > best_score) {
 		best_score = score;
-		gotoxy(4, 4);
 		cout << "Congratulations! It's a Best Score!";
 	}
+	else
+		cout << "Try Again...";
 	gotoxy(4, 6);
 	cout << "Score : " << score;
 	gotoxy(4, 8);
@@ -565,3 +715,4 @@ void game_over(int score) {
 	setcolor(15, 0);
 	system("cls");
 }
+
